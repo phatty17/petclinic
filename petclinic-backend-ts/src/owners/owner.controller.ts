@@ -12,7 +12,13 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -62,6 +68,11 @@ export class OwnerController {
    */
   @Get()
   @ApiOperation({ operationId: 'listOwners', summary: 'List owners' })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    description: 'Search query (case-insensitive contains filter over name, address, city, telephone, pet names)',
+  })
   @ApiOkResponse({ type: [OwnerDto] })
   async listOwners(@Query('q') q = ''): Promise<OwnerDto[]> {
     const owners = await this.findByVisibleText(q);

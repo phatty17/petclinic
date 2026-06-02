@@ -14,7 +14,7 @@ import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { generateOpenApiYaml } from './openapi-document';
 
-const COMMITTED = join(__dirname, '..', '..', 'openapi.yaml');
+const COMMITTED = join(__dirname, '..', '..', '..', 'openapi.yaml');
 
 async function generate(): Promise<void> {
   const yamlText = await generateOpenApiYaml();
