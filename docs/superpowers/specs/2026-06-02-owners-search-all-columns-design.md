@@ -21,7 +21,7 @@ Telephone, and Pets (pet names).
 - **`?q=` replaces `?lastName=`** — the Angular frontend is the only consumer;
   no dead params kept.
 - **Name matches the concatenated visible string**: `"george fra"` matches
-  George Franklin; `"rge fra"` does not.
+  George Franklin; the reversed `"franklin geo"` does not.
 - **Live as-you-type search** in the UI (debounced), replacing the
   "Find Owner" button.
 - A match on any pet name returns the owner row with **all** its pets.
