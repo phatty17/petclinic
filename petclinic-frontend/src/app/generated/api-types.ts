@@ -169,6 +169,8 @@ export interface components {
        * @example 1
        */
       ownerId?: number;
+      /** @description The type of the pet. */
+      type: components["schemas"]["PetTypeDto"];
       /** @description Vet visit bookings for this pet. */
       visits: readonly components["schemas"]["VisitDto"][];
     };
@@ -322,7 +324,7 @@ export interface operations {
     parameters: {
       query?: {
         /** @description Search query (case-insensitive contains filter over name, address, city, telephone, pet names) */
-        q?: unknown;
+        q?: string;
       };
     };
     responses: {

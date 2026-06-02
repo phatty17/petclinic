@@ -89,6 +89,10 @@ components:
           example: 1
           readOnly: true
           type: number
+        type:
+          allOf:
+            - $ref: '#/components/schemas/PetTypeDto'
+          description: The type of the pet.
         visits:
           description: Vet visit bookings for this pet.
           items:
@@ -98,6 +102,7 @@ components:
       required:
         - name
         - birthDate
+        - type
         - id
         - visits
       type: object
@@ -286,7 +291,8 @@ paths:
           in: query
           name: q
           required: false
-          schema: {}
+          schema:
+            type: string
       responses:
         '200':
           content:

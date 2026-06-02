@@ -71,6 +71,7 @@ export class OwnerController {
   @ApiQuery({
     name: 'q',
     required: false,
+    type: String,
     description: 'Search query (case-insensitive contains filter over name, address, city, telephone, pet names)',
   })
   @ApiOkResponse({ type: [OwnerDto] })
