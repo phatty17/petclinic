@@ -12,6 +12,8 @@ import {
 } from './test-app';
 import { savePet, savePetType, saveOwner } from './fixtures';
 import { todayIso } from './fixtures';
+import { Owner } from '../src/owners/owner.entity';
+import { PetType } from '../src/pet-types/pet-type.entity';
 
 /**
  * End-to-end tests for the owners endpoints.
@@ -25,6 +27,8 @@ describe('OwnerController (e2e)', () => {
   let ownerId: number;
   let petId: number;
   let petTypeId: number;
+  let georgeOwner: Owner;
+  let dogType: PetType;
 
   beforeAll(async () => {
     available = await isDbAvailable();
@@ -48,8 +52,10 @@ describe('OwnerController (e2e)', () => {
     }
     await cleanDatabase();
     const owner = await saveOwner(ds, { firstName: 'George', lastName: 'Franklin' });
+    georgeOwner = owner;
     ownerId = owner.id;
     const type = await savePetType(ds, 'dog');
+    dogType = type;
     petTypeId = type.id;
     const pet = await savePet(ds, owner, type, { name: 'Rosy', birthDate: todayIso() });
     petId = pet.id;
@@ -85,18 +91,100 @@ describe('OwnerController (e2e)', () => {
     expect(match).toMatchObject({ id: ownerId, firstName: 'George', lastName: 'Franklin' });
   });
 
-  it('getAllWithLastNameFilter', async () => {
+  // GET /api/owners?q= — case-insensitive 'contains' over the visible table
+  // content: "first last" name, address, city, telephone, and pet names.
+  // Each positive test saves a decoy owner that must NOT match, so the
+  // assertions fail against the old return-everything behaviour.
+  const saveDecoyOwner = () =>
+    saveOwner(ds, {
+      firstName: 'Zara',
+      lastName: 'Quibble',
+      address: 'Decoy Lane 1',
+      city: 'Nowhere',
+      telephone: '0000000000',
+    });
+
+  const ids = (body: { id: number }[]) => body.map((o) => o.id);
+
+  it('search_byLastNameFragment_caseInsensitive', async () => {
     if (!available) return;
-    const owner2 = await saveOwner(ds, { lastName: 'Zephyrson' });
-    const res = await http().get('/api/owners?lastName=Zephyr').expect(200);
-    const match = res.body.find((o: { id: number }) => o.id === owner2.id);
-    expect(match).toMatchObject({ id: owner2.id, lastName: 'Zephyrson' });
+    await saveDecoyOwner();
+    const res = await http().get('/api/owners').query({ q: 'rANKl' }).expect(200);
+    expect(ids(res.body)).toEqual([ownerId]);
   });
 
-  it('getAllWithNameFilter_notFound', async () => {
+  it('search_byFirstNameFragment', async () => {
     if (!available) return;
-    const res = await http().get('/api/owners?lastName=NonExistent').expect(200);
+    await saveDecoyOwner();
+    const res = await http().get('/api/owners').query({ q: 'eorg' }).expect(200);
+    expect(ids(res.body)).toEqual([ownerId]);
+  });
+
+  it('search_byConcatenatedVisibleName', async () => {
+    if (!available) return;
+    await saveDecoyOwner();
+    const res = await http().get('/api/owners').query({ q: 'george fra' }).expect(200);
+    expect(ids(res.body)).toEqual([ownerId]);
+  });
+
+  it('search_reversedNameOrder_doesNotMatch', async () => {
+    if (!available) return;
+    const res = await http().get('/api/owners').query({ q: 'franklin geo' }).expect(200);
     expect(res.body).toEqual([]);
+  });
+
+  it('search_byAddressFragment', async () => {
+    if (!available) return;
+    await saveDecoyOwner();
+    const res = await http().get('/api/owners').query({ q: 'aker st' }).expect(200);
+    expect(ids(res.body)).toEqual([ownerId]);
+  });
+
+  it('search_byCityFragment', async () => {
+    if (!available) return;
+    await saveDecoyOwner();
+    const res = await http().get('/api/owners').query({ q: 'ONDO' }).expect(200);
+    expect(ids(res.body)).toEqual([ownerId]);
+  });
+
+  it('search_byTelephoneFragment', async () => {
+    if (!available) return;
+    await saveDecoyOwner();
+    const res = await http().get('/api/owners').query({ q: '345678' }).expect(200);
+    expect(ids(res.body)).toEqual([ownerId]);
+  });
+
+  it('search_byPetName_returnsOwnerWithAllPets', async () => {
+    if (!available) return;
+    await saveDecoyOwner();
+    await savePet(ds, georgeOwner, dogType, { name: 'Max' });
+    const res = await http().get('/api/owners').query({ q: 'osy' }).expect(200);
+    expect(ids(res.body)).toEqual([ownerId]);
+    const petNames = res.body[0].pets.map((p: { name: string }) => p.name).sort();
+    expect(petNames).toEqual(['Max', 'Rosy']);
+  });
+
+  it('search_treatsLikeWildcardsLiterally', async () => {
+    if (!available) return;
+    const discount = await saveOwner(ds, { lastName: 'Wild', address: '50% Discount Rd' });
+    const res = await http().get('/api/owners').query({ q: '50%' }).expect(200);
+    expect(ids(res.body)).toEqual([discount.id]);
+
+    const underscore = await http().get('/api/owners').query({ q: '_' }).expect(200);
+    expect(underscore.body).toEqual([]);
+  });
+
+  it('search_noMatch_returnsEmpty', async () => {
+    if (!available) return;
+    const res = await http().get('/api/owners').query({ q: 'zzz-no-such' }).expect(200);
+    expect(res.body).toEqual([]);
+  });
+
+  it('search_emptyQ_returnsAllOwners', async () => {
+    if (!available) return;
+    const decoy = await saveDecoyOwner();
+    const res = await http().get('/api/owners').query({ q: '' }).expect(200);
+    expect(ids(res.body)).toEqual([ownerId, decoy.id]);
   });
 
   it('update_ok', async () => {
