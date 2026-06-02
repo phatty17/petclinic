@@ -1,1790 +1,823 @@
-openapi: 3.1.0
+components:
+  schemas:
+    OwnerDto:
+      properties:
+        address:
+          description: The postal address of the pet owner.
+          example: 110 W. Liberty St.
+          type: string
+        city:
+          description: The city of the pet owner.
+          example: Madison
+          type: string
+        firstName:
+          description: The first name of the pet owner.
+          example: George
+          type: string
+        id:
+          description: The ID of the pet owner.
+          example: 1
+          readOnly: true
+          type: number
+        lastName:
+          description: The last name of the pet owner.
+          example: Franklin
+          type: string
+        pets:
+          description: The pets owned by this individual including any booked vet visits.
+          items:
+            $ref: '#/components/schemas/PetDto'
+          readOnly: true
+          type: array
+        telephone:
+          description: The telephone number of the pet owner.
+          example: '6085551023'
+          type: string
+      required:
+        - firstName
+        - lastName
+        - address
+        - city
+        - telephone
+        - pets
+      type: object
+    OwnerFieldsDto:
+      properties:
+        address:
+          description: The postal address of the pet owner.
+          example: 110 W. Liberty St.
+          type: string
+        city:
+          description: The city of the pet owner.
+          example: Madison
+          type: string
+        firstName:
+          description: The first name of the pet owner.
+          example: George
+          type: string
+        lastName:
+          description: The last name of the pet owner.
+          example: Franklin
+          type: string
+        telephone:
+          description: The telephone number of the pet owner.
+          example: '6085551023'
+          type: string
+      required:
+        - firstName
+        - lastName
+        - address
+        - city
+        - telephone
+      type: object
+    PetDto:
+      properties:
+        birthDate:
+          example: '2010-09-07'
+          type: string
+        id:
+          description: The ID of the pet.
+          example: 1
+          readOnly: true
+          type: number
+        name:
+          description: The name of the pet.
+          example: Leo
+          type: string
+        ownerId:
+          description: The ID of the pet's owner.
+          example: 1
+          readOnly: true
+          type: number
+        type:
+          allOf:
+            - $ref: '#/components/schemas/PetTypeDto'
+          description: The type of the pet.
+        visits:
+          description: Vet visit bookings for this pet.
+          items:
+            $ref: '#/components/schemas/VisitDto'
+          readOnly: true
+          type: array
+      required:
+        - name
+        - birthDate
+        - type
+        - id
+        - visits
+      type: object
+    PetFieldsDto:
+      properties:
+        birthDate:
+          description: The date of birth of the pet.
+          example: '2010-09-07'
+          type: string
+        name:
+          description: The name of the pet.
+          example: Leo
+          type: string
+        type:
+          $ref: '#/components/schemas/PetTypeDto'
+      required:
+        - name
+        - birthDate
+        - type
+      type: object
+    PetTypeDto:
+      properties:
+        id:
+          description: The ID of the pet type.
+          example: 1
+          type: number
+        name:
+          description: The name of the pet type.
+          example: cat
+          type: string
+      required:
+        - name
+        - id
+      type: object
+    PetTypeFieldsDto:
+      properties:
+        name:
+          description: The name of the pet type.
+          example: cat
+          type: string
+      required:
+        - name
+      type: object
+    RoleDto:
+      properties:
+        name:
+          description: The role's name
+          example: admin
+          type: string
+      required:
+        - name
+      type: object
+    SpecialtyDto:
+      properties:
+        id:
+          description: The ID of the specialty.
+          example: 1
+          readOnly: true
+          type: number
+        name:
+          description: The name of the specialty.
+          example: radiology
+          type: string
+      required:
+        - id
+        - name
+      type: object
+    UserDto:
+      properties:
+        enabled:
+          description: Indicates if the user is enabled
+          example: true
+          type: boolean
+        password:
+          description: The password
+          example: 1234abc
+          type: string
+        roles:
+          description: The roles of an user
+          items:
+            $ref: '#/components/schemas/RoleDto'
+          type: array
+        username:
+          description: The username
+          example: john.doe
+          type: string
+      required:
+        - username
+        - roles
+      type: object
+    VetDto:
+      properties:
+        firstName:
+          description: The first name of the vet.
+          example: James
+          type: string
+        id:
+          description: The ID of the vet.
+          example: 1
+          readOnly: true
+          type: number
+        lastName:
+          description: The last name of the vet.
+          example: Carter
+          type: string
+        specialties:
+          description: The specialties of the vet.
+          items:
+            $ref: '#/components/schemas/SpecialtyDto'
+          type: array
+      required:
+        - firstName
+        - lastName
+        - specialties
+        - id
+      type: object
+    VisitDto:
+      properties:
+        date:
+          description: The date of the visit.
+          example: '2013-01-01'
+          type: string
+        description:
+          description: The description for the visit.
+          example: rabies shot
+          type: string
+        id:
+          description: The ID of the visit.
+          example: 1
+          readOnly: true
+          type: number
+        ownerFirstName:
+          description: First name of the owner (server-populated).
+          readOnly: true
+          type: string
+        ownerId:
+          description: ID of the owner of the pet (server-populated).
+          readOnly: true
+          type: number
+        ownerLastName:
+          description: Last name of the owner (server-populated).
+          readOnly: true
+          type: string
+        petId:
+          description: The ID of the pet.
+          example: 1
+          type: number
+        petName:
+          description: Name of the pet (server-populated).
+          readOnly: true
+          type: string
+      required:
+        - description
+        - id
+        - petId
+      type: object
+    VisitFieldsDto:
+      properties:
+        date:
+          description: The date of the visit.
+          example: '2013-01-01'
+          type: string
+        description:
+          description: The description for the visit.
+          example: rabies shot
+          type: string
+      required:
+        - description
+      type: object
+  securitySchemes:
+    basic:
+      scheme: basic
+      type: http
 info:
-  description: "This is the REST API documentation of the Petclinic backend.\
-    \ If authentication is enabled, use admin/admin when calling the APIs"
+  contact: {}
+  description: This is the REST API documentation of the Petclinic backend. If authentication is enabled, use admin/admin when calling the APIs
   title: REST Petclinic Backend API
-  version: "1.0"
-servers:
-- description: Generated server url
-  url: http://localhost
+  version: '1.0'
+openapi: 3.0.0
 paths:
-  /:
-    delete:
-      operationId: redirectToSwagger_3
-      responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - root-rest-controller
-    get:
-      operationId: redirectToSwagger
-      responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - root-rest-controller
-    head:
-      operationId: redirectToSwagger_5
-      responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - root-rest-controller
-    options:
-      operationId: redirectToSwagger_6
-      responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - root-rest-controller
-    patch:
-      operationId: redirectToSwagger_4
-      responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - root-rest-controller
-    post:
-      operationId: redirectToSwagger_1
-      responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - root-rest-controller
-    put:
-      operationId: redirectToSwagger_2
-      responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - root-rest-controller
   /api/owners:
     get:
       operationId: listOwners
       parameters:
-      - in: query
-        name: lastName
-        required: false
-        schema:
-          type: string
-          default: ""
+        - description: Search query (case-insensitive contains filter over name, address, city, telephone, pet names)
+          in: query
+          name: q
+          required: false
+          schema:
+            type: string
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                type: array
                 items:
-                  $ref: "#/components/schemas/OwnerDto"
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+                  $ref: '#/components/schemas/OwnerDto'
+                type: array
+          description: ''
       summary: List owners
       tags:
-      - owner-rest-controller
+        - owner
     post:
       operationId: addOwner
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OwnerFieldsDto"
+              $ref: '#/components/schemas/OwnerFieldsDto'
         required: true
       responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '201':
+          description: ''
       summary: Create an owner
       tags:
-      - owner-rest-controller
+        - owner
   /api/owners/count:
     get:
       operationId: countOwners
+      parameters: []
       responses:
-        "200":
-          content:
-            '*/*':
-              schema:
-                type: integer
-                format: int64
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       summary: Count owners
       tags:
-      - owner-rest-controller
+        - owner
   /api/owners/{ownerId}:
     delete:
       operationId: deleteOwner
       parameters:
-      - in: path
-        name: ownerId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: ownerId
+          required: true
+          schema:
+            type: number
       responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       summary: Delete an owner by ID
       tags:
-      - owner-rest-controller
+        - owner
     get:
       operationId: getOwner
       parameters:
-      - in: path
-        name: ownerId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: ownerId
+          required: true
+          schema:
+            type: number
       responses:
-        "200":
+        '200':
           content:
-            '*/*':
+            application/json:
               schema:
-                $ref: "#/components/schemas/OwnerDto"
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+                $ref: '#/components/schemas/OwnerDto'
+          description: ''
       summary: Get an owner by ID
       tags:
-      - owner-rest-controller
+        - owner
     put:
       operationId: updateOwner
       parameters:
-      - in: path
-        name: ownerId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: ownerId
+          required: true
+          schema:
+            type: number
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OwnerFieldsDto"
+              $ref: '#/components/schemas/OwnerFieldsDto'
         required: true
       responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       summary: Update an owner
       tags:
-      - owner-rest-controller
+        - owner
   /api/owners/{ownerId}/pets:
     post:
       operationId: addPetToOwner
       parameters:
-      - in: path
-        name: ownerId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: ownerId
+          required: true
+          schema:
+            type: number
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PetFieldsDto"
+              $ref: '#/components/schemas/PetFieldsDto'
         required: true
       responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '201':
+          description: ''
       summary: Add a pet to an owner
       tags:
-      - owner-rest-controller
+        - owner
   /api/owners/{ownerId}/pets/{petId}:
     get:
       operationId: getOwnersPet
       parameters:
-      - in: path
-        name: ownerId
-        required: true
-        schema:
-          type: integer
-          format: int32
-      - in: path
-        name: petId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: ownerId
+          required: true
+          schema:
+            type: number
+        - in: path
+          name: petId
+          required: true
+          schema:
+            type: number
       responses:
-        "200":
+        '200':
           content:
-            '*/*':
+            application/json:
               schema:
-                $ref: "#/components/schemas/PetDto"
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+                $ref: '#/components/schemas/PetDto'
+          description: ''
       summary: Get a pet belonging to an owner
       tags:
-      - owner-rest-controller
+        - owner
     put:
       operationId: updateOwnersPet
       parameters:
-      - in: path
-        name: ownerId
-        required: true
-        schema:
-          type: integer
-          format: int32
-      - in: path
-        name: petId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: ownerId
+          required: true
+          schema:
+            type: number
+        - in: path
+          name: petId
+          required: true
+          schema:
+            type: number
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PetFieldsDto"
+              $ref: '#/components/schemas/PetFieldsDto'
         required: true
       responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       summary: Update an owner's pet
       tags:
-      - owner-rest-controller
+        - owner
   /api/owners/{ownerId}/pets/{petId}/visits:
     post:
       operationId: addVisitToOwner
       parameters:
-      - in: path
-        name: ownerId
-        required: true
-        schema:
-          type: integer
-          format: int32
-      - in: path
-        name: petId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: ownerId
+          required: true
+          schema:
+            type: number
+        - in: path
+          name: petId
+          required: true
+          schema:
+            type: number
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/VisitFieldsDto"
+              $ref: '#/components/schemas/VisitFieldsDto'
         required: true
       responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '201':
+          description: ''
       summary: Add a visit for an owner's pet
       tags:
-      - owner-rest-controller
+        - owner
   /api/pets:
     get:
-      operationId: listPets
+      operationId: PetController_listPets
+      parameters: []
       responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/PetDto"
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       tags:
-      - pet-rest-controller
+        - pets
   /api/pets/{petId}:
     delete:
-      operationId: deletePet
+      operationId: PetController_deletePet
       parameters:
-      - in: path
-        name: petId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: petId
+          required: true
+          schema:
+            type: number
       responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       tags:
-      - pet-rest-controller
+        - pets
     get:
-      operationId: getPet
+      operationId: PetController_getPet
       parameters:
-      - in: path
-        name: petId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: petId
+          required: true
+          schema:
+            type: number
       responses:
-        "200":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/PetDto"
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       tags:
-      - pet-rest-controller
+        - pets
     put:
-      operationId: updatePet
+      operationId: PetController_updatePet
       parameters:
-      - in: path
-        name: petId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: petId
+          required: true
+          schema:
+            type: number
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PetDto"
+              $ref: '#/components/schemas/PetDto'
         required: true
       responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       tags:
-      - pet-rest-controller
+        - pets
   /api/pettypes:
     get:
-      operationId: listPetTypes
+      operationId: PetTypeController_listPetTypes
+      parameters: []
       responses:
-        "200":
+        '200':
+          description: ''
+      tags:
+        - pettypes
+    post:
+      operationId: PetTypeController_addPetType
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PetTypeFieldsDto'
+        required: true
+      responses:
+        '201':
+          description: ''
+      tags:
+        - pettypes
+  /api/pettypes/{petTypeId}:
+    delete:
+      operationId: PetTypeController_deletePetType
+      parameters:
+        - in: path
+          name: petTypeId
+          required: true
+          schema:
+            type: number
+      responses:
+        '204':
+          description: ''
+      tags:
+        - pettypes
+    get:
+      operationId: PetTypeController_getPetType
+      parameters:
+        - in: path
+          name: petTypeId
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: ''
+      tags:
+        - pettypes
+    put:
+      operationId: PetTypeController_updatePetType
+      parameters:
+        - in: path
+          name: petTypeId
+          required: true
+          schema:
+            type: number
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PetTypeDto'
+        required: true
+      responses:
+        '200':
+          description: ''
+      tags:
+        - pettypes
+  /api/specialties:
+    get:
+      operationId: SpecialtyController_listSpecialties
+      parameters: []
+      responses:
+        '200':
+          description: ''
+    post:
+      operationId: SpecialtyController_addSpecialty
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpecialtyDto'
+        required: true
+      responses:
+        '201':
+          description: ''
+  /api/specialties/{specialtyId}:
+    delete:
+      operationId: SpecialtyController_deleteSpecialty
+      parameters:
+        - in: path
+          name: specialtyId
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: ''
+    get:
+      operationId: SpecialtyController_getSpecialty
+      parameters:
+        - in: path
+          name: specialtyId
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: ''
+    put:
+      operationId: SpecialtyController_updateSpecialty
+      parameters:
+        - in: path
+          name: specialtyId
+          required: true
+          schema:
+            type: number
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpecialtyDto'
+        required: true
+      responses:
+        '200':
+          description: ''
+  /api/users:
+    post:
+      operationId: UserController_addUser
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDto'
+        required: true
+      responses:
+        '201':
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/PetTypeDto"
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+                $ref: '#/components/schemas/UserDto'
+          description: ''
       tags:
-      - pet-type-rest-controller
-    post:
-      operationId: addPetType
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PetTypeFieldsDto"
-        required: true
-      responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - pet-type-rest-controller
-  /api/pettypes/{petTypeId}:
-    delete:
-      operationId: deletePetType
-      parameters:
-      - in: path
-        name: petTypeId
-        required: true
-        schema:
-          type: integer
-          format: int32
-      responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - pet-type-rest-controller
-    get:
-      operationId: getPetType
-      parameters:
-      - in: path
-        name: petTypeId
-        required: true
-        schema:
-          type: integer
-          format: int32
-      responses:
-        "200":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/PetTypeDto"
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - pet-type-rest-controller
-    put:
-      operationId: updatePetType
-      parameters:
-      - in: path
-        name: petTypeId
-        required: true
-        schema:
-          type: integer
-          format: int32
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PetTypeDto"
-        required: true
-      responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - pet-type-rest-controller
-  /api/specialties:
-    get:
-      operationId: listSpecialties
-      responses:
-        "200":
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/SpecialtyDto"
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - specialty-rest-controller
-    post:
-      operationId: addSpecialty
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SpecialtyDto"
-        required: true
-      responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - specialty-rest-controller
-  /api/specialties/{specialtyId}:
-    delete:
-      operationId: deleteSpecialty
-      parameters:
-      - in: path
-        name: specialtyId
-        required: true
-        schema:
-          type: integer
-          format: int32
-      responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - specialty-rest-controller
-    get:
-      operationId: getSpecialty
-      parameters:
-      - in: path
-        name: specialtyId
-        required: true
-        schema:
-          type: integer
-          format: int32
-      responses:
-        "200":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/SpecialtyDto"
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - specialty-rest-controller
-    put:
-      operationId: updateSpecialty
-      parameters:
-      - in: path
-        name: specialtyId
-        required: true
-        schema:
-          type: integer
-          format: int32
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SpecialtyDto"
-        required: true
-      responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - specialty-rest-controller
-  /api/users:
-    post:
-      operationId: addUser
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserDto"
-        required: true
-      responses:
-        "200":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/UserDto"
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
-      tags:
-      - user-rest-controller
+        - user-rest-controller
   /api/vets:
     get:
-      operationId: listVets
+      operationId: VetController_listVets
+      parameters: []
       responses:
-        "200":
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/VetDto"
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       tags:
-      - vet-rest-controller
+        - vets
     post:
-      operationId: addVet
+      operationId: VetController_addVet
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/VetDto"
+              $ref: '#/components/schemas/VetDto'
         required: true
       responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '201':
+          description: ''
       tags:
-      - vet-rest-controller
+        - vets
   /api/vets/{vetId}:
     delete:
-      operationId: deleteVet
+      operationId: VetController_deleteVet
       parameters:
-      - in: path
-        name: vetId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: vetId
+          required: true
+          schema:
+            type: number
       responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       tags:
-      - vet-rest-controller
+        - vets
     get:
-      operationId: getVet
+      operationId: VetController_getVet
       parameters:
-      - in: path
-        name: vetId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: vetId
+          required: true
+          schema:
+            type: number
       responses:
-        "200":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/VetDto"
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       tags:
-      - vet-rest-controller
+        - vets
     put:
-      operationId: updateVet
+      operationId: VetController_updateVet
       parameters:
-      - in: path
-        name: vetId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: vetId
+          required: true
+          schema:
+            type: number
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/VetDto"
+              $ref: '#/components/schemas/VetDto'
         required: true
       responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       tags:
-      - vet-rest-controller
+        - vets
   /api/visits:
     get:
-      operationId: listVisits
+      operationId: VisitController_listVisits
+      parameters: []
       responses:
-        "200":
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/VisitDto"
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       tags:
-      - visit-rest-controller
+        - visits
     post:
-      operationId: addVisit
+      operationId: VisitController_addVisit
+      parameters: []
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/VisitDto"
+              $ref: '#/components/schemas/VisitDto'
         required: true
       responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '201':
+          description: ''
       tags:
-      - visit-rest-controller
+        - visits
   /api/visits/{visitId}:
     delete:
-      operationId: deleteVisit
+      operationId: VisitController_deleteVisit
       parameters:
-      - in: path
-        name: visitId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: visitId
+          required: true
+          schema:
+            type: number
       responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       tags:
-      - visit-rest-controller
+        - visits
     get:
-      operationId: getVisit
+      operationId: VisitController_getVisit
       parameters:
-      - in: path
-        name: visitId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: visitId
+          required: true
+          schema:
+            type: number
       responses:
-        "200":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/VisitDto"
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       tags:
-      - visit-rest-controller
+        - visits
     put:
-      operationId: updateVisit
+      operationId: VisitController_updateVisit
       parameters:
-      - in: path
-        name: visitId
-        required: true
-        schema:
-          type: integer
-          format: int32
+        - in: path
+          name: visitId
+          required: true
+          schema:
+            type: number
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/VisitFieldsDto"
+              $ref: '#/components/schemas/VisitFieldsDto'
         required: true
       responses:
-        "200":
-          description: OK
-        "400":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Bad Request
-        "404":
-          content:
-            '*/*':
-              schema:
-                type: string
-          description: Not Found
-        "500":
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/ProblemDetail"
-          description: Internal Server Error
+        '200':
+          description: ''
       tags:
-      - visit-rest-controller
-components:
-  schemas:
-    OwnerDto:
-      type: object
-      properties:
-        address:
-          type: string
-          description: The postal address of the pet owner.
-          example: 110 W. Liberty St.
-          maxLength: 255
-          minLength: 1
-        city:
-          type: string
-          description: The city of the pet owner.
-          example: Madison
-          maxLength: 80
-          minLength: 1
-        firstName:
-          type: string
-          description: The first name of the pet owner.
-          example: George
-          maxLength: 30
-          minLength: 1
-        id:
-          type: integer
-          format: int32
-          description: The ID of the pet owner.
-          example: 1
-          minimum: 0
-          readOnly: true
-        lastName:
-          type: string
-          description: The last name of the pet owner.
-          example: Franklin
-          maxLength: 30
-          minLength: 1
-        pets:
-          type: array
-          description: The pets owned by this individual including any booked vet
-            visits.
-          items:
-            $ref: "#/components/schemas/PetDto"
-          readOnly: true
-        telephone:
-          type: string
-          description: The telephone number of the pet owner.
-          example: "6085551023"
-          maxLength: 20
-          minLength: 1
-          pattern: "^[0-9]*$"
-      required:
-      - address
-      - city
-      - firstName
-      - lastName
-      - pets
-      - telephone
-    OwnerFieldsDto:
-      type: object
-      properties:
-        address:
-          type: string
-          description: The postal address of the pet owner.
-          example: 110 W. Liberty St.
-          maxLength: 255
-          minLength: 1
-        city:
-          type: string
-          description: The city of the pet owner.
-          example: Madison
-          maxLength: 80
-          minLength: 1
-        firstName:
-          type: string
-          description: The first name of the pet owner.
-          example: George
-          maxLength: 30
-          minLength: 1
-        lastName:
-          type: string
-          description: The last name of the pet owner.
-          example: Franklin
-          maxLength: 30
-          minLength: 1
-        telephone:
-          type: string
-          description: The telephone number of the pet owner.
-          example: "6085551023"
-          maxLength: 20
-          minLength: 1
-          pattern: "^[0-9]*$"
-      required:
-      - address
-      - city
-      - firstName
-      - lastName
-      - telephone
-    PetDto:
-      type: object
-      properties:
-        birthDate:
-          type: string
-          format: date
-          example: 2010-09-07
-        id:
-          type: integer
-          format: int32
-          description: The ID of the pet.
-          example: 1
-          minimum: 0
-          readOnly: true
-        name:
-          type: string
-          description: The name of the pet.
-          example: Leo
-          maxLength: 30
-          minLength: 0
-        ownerId:
-          type: integer
-          format: int32
-          description: The ID of the pet's owner.
-          example: 1
-          minimum: 0
-          readOnly: true
-        type:
-          $ref: "#/components/schemas/PetTypeDto"
-        visits:
-          type: array
-          description: Vet visit bookings for this pet.
-          items:
-            $ref: "#/components/schemas/VisitDto"
-          readOnly: true
-      required:
-      - birthDate
-      - id
-      - name
-      - type
-      - visits
-    PetFieldsDto:
-      type: object
-      properties:
-        birthDate:
-          type: string
-          format: date
-          description: The date of birth of the pet.
-          example: 2010-09-07
-        name:
-          type: string
-          description: The name of the pet.
-          example: Leo
-          maxLength: 30
-          minLength: 0
-        type:
-          $ref: "#/components/schemas/PetTypeDto"
-      required:
-      - birthDate
-      - name
-      - type
-    PetTypeDto:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-          description: The ID of the pet type.
-          example: 1
-          minimum: 0
-        name:
-          type: string
-          description: The name of the pet type.
-          example: cat
-          maxLength: 80
-          minLength: 1
-      required:
-      - id
-      - name
-    PetTypeFieldsDto:
-      type: object
-      properties:
-        name:
-          type: string
-          description: The name of the pet type.
-          example: cat
-          maxLength: 80
-          minLength: 1
-      required:
-      - name
-    ProblemDetail:
-      type: object
-      properties:
-        detail:
-          type: string
-        instance:
-          type: string
-          format: uri
-        properties:
-          type: object
-          additionalProperties: {}
-        status:
-          type: integer
-          format: int32
-        title:
-          type: string
-        type:
-          type: string
-          format: uri
-    RoleDto:
-      type: object
-      properties:
-        name:
-          type: string
-          description: The role's name
-          example: admin
-          maxLength: 80
-          minLength: 1
-      required:
-      - name
-    SpecialtyDto:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-          description: The ID of the specialty.
-          example: 1
-          minimum: 0
-          readOnly: true
-        name:
-          type: string
-          description: The name of the specialty.
-          example: radiology
-          maxLength: 80
-          minLength: 1
-      required:
-      - id
-      - name
-    UserDto:
-      type: object
-      properties:
-        enabled:
-          type: boolean
-          description: Indicates if the user is enabled
-          example: true
-        password:
-          type: string
-          description: The password
-          example: 1234abc
-          maxLength: 80
-          minLength: 1
-        roles:
-          type: array
-          description: The roles of an user
-          items:
-            $ref: "#/components/schemas/RoleDto"
-        username:
-          type: string
-          description: The username
-          example: john.doe
-          maxLength: 80
-          minLength: 1
-      required:
-      - username
-    VetDto:
-      type: object
-      properties:
-        firstName:
-          type: string
-          description: The first name of the vet.
-          example: James
-          maxLength: 30
-          minLength: 1
-          pattern: \w+
-        id:
-          type: integer
-          format: int32
-          description: The ID of the vet.
-          example: 1
-          minimum: 0
-          readOnly: true
-        lastName:
-          type: string
-          description: The last name of the vet.
-          example: Carter
-          maxLength: 30
-          minLength: 1
-          pattern: \w+
-        specialties:
-          type: array
-          description: The specialties of the vet.
-          items:
-            $ref: "#/components/schemas/SpecialtyDto"
-      required:
-      - firstName
-      - id
-      - lastName
-      - specialties
-    VisitDto:
-      type: object
-      properties:
-        date:
-          type: string
-          format: date
-          description: The date of the visit.
-          example: 2013-01-01
-        description:
-          type: string
-          description: The description for the visit.
-          example: rabies shot
-          maxLength: 255
-          minLength: 1
-        id:
-          type: integer
-          format: int32
-          description: The ID of the visit.
-          example: 1
-          minimum: 0
-          readOnly: true
-        ownerFirstName:
-          type: string
-          description: First name of the owner (server-populated).
-          readOnly: true
-        ownerId:
-          type: integer
-          format: int32
-          description: ID of the owner of the pet (server-populated).
-          readOnly: true
-        ownerLastName:
-          type: string
-          description: Last name of the owner (server-populated).
-          readOnly: true
-        petId:
-          type: integer
-          format: int32
-          description: The ID of the pet.
-          example: 1
-          minimum: 0
-        petName:
-          type: string
-          description: Name of the pet (server-populated).
-          readOnly: true
-      required:
-      - description
-      - id
-      - petId
-    VisitFieldsDto:
-      type: object
-      properties:
-        date:
-          type: string
-          format: date
-          description: The date of the visit.
-          example: 2013-01-01
-        description:
-          type: string
-          description: The description for the visit.
-          example: rabies shot
-          maxLength: 255
-          minLength: 1
-      required:
-      - description
+        - visits
+servers: []
+tags: []

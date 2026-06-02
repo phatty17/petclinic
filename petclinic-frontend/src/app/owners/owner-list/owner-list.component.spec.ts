@@ -1,6 +1,6 @@
 /* tslint:disable:no-unused-variable */
 
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick, waitForAsync } from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {DebugElement, NO_ERRORS_SCHEMA} from '@angular/core';
 
@@ -23,11 +23,7 @@ import Spy = jasmine.Spy;
 
 
 class OwnerServiceStub {
-  getOwners(): Observable<Owner[]> {
-    return of();
-  }
-
-  searchOwners(lastName: string): Observable<Owner[]> {
+  searchOwners(q: string): Observable<Owner[]> {
     return of();
   }
 }
@@ -37,7 +33,6 @@ describe('OwnerListComponent', () => {
   let component: OwnerListComponent;
   let fixture: ComponentFixture<OwnerListComponent>;
   let ownerService = new OwnerServiceStub();
-  let getOwnersSpy: Spy;
   let searchOwnersSpy: Spy;
   let de: DebugElement;
   let el: HTMLElement;
@@ -79,51 +74,60 @@ describe('OwnerListComponent', () => {
     fixture = TestBed.createComponent(OwnerListComponent);
     component = fixture.componentInstance;
     ownerService = fixture.debugElement.injector.get(OwnerService);
-    getOwnersSpy = spyOn(ownerService, 'getOwners')
-      .and.returnValue(of(testOwners));
     searchOwnersSpy = spyOn(ownerService, 'searchOwners')
       .and.returnValue(of(testOwners));
-
   });
 
   it('should create OwnerListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should call ngOnInit() method', () => {
+  it('loads all owners on init with an empty query (after the debounce)', fakeAsync(() => {
     fixture.detectChanges();
-    expect(getOwnersSpy.calls.any()).toBe(true, 'getOwners called');
-  });
+    tick(300);
 
-
-  it(' should show full name after getOwners observable (async) ', waitForAsync(() => {
-    fixture.detectChanges();
-    fixture.whenStable().then(() => { // wait for async getOwners
-      fixture.detectChanges();        // update view with name
-      de = fixture.debugElement.query(By.css('.ownerFullName'));
-      el = de.nativeElement;
-      expect(el.innerText).toBe((testOwner.firstName.toString() + ' ' + testOwner.lastName.toString()));
-    });
+    expect(searchOwnersSpy).toHaveBeenCalledWith('');
+    expect(component.owners).toEqual(testOwners);
+    expect(component.isOwnersDataReceived).toBe(true);
   }));
 
-  it('searchByLastName should call getOwners for empty term', () => {
-    getOwnersSpy.calls.reset();
+  it('shows the owner full name after the initial load', fakeAsync(() => {
+    fixture.detectChanges();
+    tick(300);
+    fixture.detectChanges();
+
+    de = fixture.debugElement.query(By.css('.ownerFullName'));
+    el = de.nativeElement;
+    expect(el.innerText).toBe('George Franklin');
+  }));
+
+  it('debounces keystrokes into a single search with the final term', fakeAsync(() => {
+    fixture.detectChanges();
+    tick(300);
     searchOwnersSpy.calls.reset();
 
-    component.searchByLastName('');
+    component.searchControl.setValue('F');
+    tick(100);
+    component.searchControl.setValue('Fr');
+    tick(100);
+    component.searchControl.setValue('Fra');
+    tick(300);
 
-    expect(getOwnersSpy).toHaveBeenCalled();
-    expect(searchOwnersSpy).not.toHaveBeenCalled();
-  });
+    expect(searchOwnersSpy).toHaveBeenCalledTimes(1);
+    expect(searchOwnersSpy).toHaveBeenCalledWith('Fra');
+  }));
 
-  it('searchByLastName should call searchOwners for non-empty term', () => {
-    getOwnersSpy.calls.reset();
+  it('does not repeat the search when the term is unchanged', fakeAsync(() => {
+    fixture.detectChanges();
+    tick(300);
     searchOwnersSpy.calls.reset();
 
-    component.searchByLastName('Fr');
+    component.searchControl.setValue('Fra');
+    tick(300);
+    component.searchControl.setValue('Fra');
+    tick(300);
 
-    expect(searchOwnersSpy).toHaveBeenCalledWith('Fr');
-    expect(getOwnersSpy).not.toHaveBeenCalled();
-  });
+    expect(searchOwnersSpy).toHaveBeenCalledTimes(1);
+  }));
 
 });

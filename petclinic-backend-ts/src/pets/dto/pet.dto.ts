@@ -27,6 +27,7 @@ export class PetDto {
   @IsDefined({ message: 'must not be null' })
   @ValidateNested()
   @Type(() => PetTypeDto)
+  @ApiProperty({ type: () => PetTypeDto, description: 'The type of the pet.' })
   type!: PetTypeDto;
 
   @IsOptional()

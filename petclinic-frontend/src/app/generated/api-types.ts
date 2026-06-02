@@ -5,15 +5,6 @@
 
 
 export interface paths {
-  "/": {
-    get: operations["redirectToSwagger"];
-    put: operations["redirectToSwagger_2"];
-    post: operations["redirectToSwagger_1"];
-    delete: operations["redirectToSwagger_3"];
-    options: operations["redirectToSwagger_6"];
-    head: operations["redirectToSwagger_5"];
-    patch: operations["redirectToSwagger_4"];
-  };
   "/api/owners": {
     /** List owners */
     get: operations["listOwners"];
@@ -47,51 +38,51 @@ export interface paths {
     post: operations["addVisitToOwner"];
   };
   "/api/pets": {
-    get: operations["listPets"];
+    get: operations["PetController_listPets"];
   };
   "/api/pets/{petId}": {
-    get: operations["getPet"];
-    put: operations["updatePet"];
-    delete: operations["deletePet"];
+    get: operations["PetController_getPet"];
+    put: operations["PetController_updatePet"];
+    delete: operations["PetController_deletePet"];
   };
   "/api/pettypes": {
-    get: operations["listPetTypes"];
-    post: operations["addPetType"];
+    get: operations["PetTypeController_listPetTypes"];
+    post: operations["PetTypeController_addPetType"];
   };
   "/api/pettypes/{petTypeId}": {
-    get: operations["getPetType"];
-    put: operations["updatePetType"];
-    delete: operations["deletePetType"];
+    get: operations["PetTypeController_getPetType"];
+    put: operations["PetTypeController_updatePetType"];
+    delete: operations["PetTypeController_deletePetType"];
   };
   "/api/specialties": {
-    get: operations["listSpecialties"];
-    post: operations["addSpecialty"];
+    get: operations["SpecialtyController_listSpecialties"];
+    post: operations["SpecialtyController_addSpecialty"];
   };
   "/api/specialties/{specialtyId}": {
-    get: operations["getSpecialty"];
-    put: operations["updateSpecialty"];
-    delete: operations["deleteSpecialty"];
+    get: operations["SpecialtyController_getSpecialty"];
+    put: operations["SpecialtyController_updateSpecialty"];
+    delete: operations["SpecialtyController_deleteSpecialty"];
   };
   "/api/users": {
-    post: operations["addUser"];
+    post: operations["UserController_addUser"];
   };
   "/api/vets": {
-    get: operations["listVets"];
-    post: operations["addVet"];
+    get: operations["VetController_listVets"];
+    post: operations["VetController_addVet"];
   };
   "/api/vets/{vetId}": {
-    get: operations["getVet"];
-    put: operations["updateVet"];
-    delete: operations["deleteVet"];
+    get: operations["VetController_getVet"];
+    put: operations["VetController_updateVet"];
+    delete: operations["VetController_deleteVet"];
   };
   "/api/visits": {
-    get: operations["listVisits"];
-    post: operations["addVisit"];
+    get: operations["VisitController_listVisits"];
+    post: operations["VisitController_addVisit"];
   };
   "/api/visits/{visitId}": {
-    get: operations["getVisit"];
-    put: operations["updateVisit"];
-    delete: operations["deleteVisit"];
+    get: operations["VisitController_getVisit"];
+    put: operations["VisitController_updateVisit"];
+    delete: operations["VisitController_deleteVisit"];
   };
 }
 
@@ -116,7 +107,6 @@ export interface components {
        */
       firstName: string;
       /**
-       * Format: int32
        * @description The ID of the pet owner.
        * @example 1
        */
@@ -162,13 +152,9 @@ export interface components {
       telephone: string;
     };
     PetDto: {
-      /**
-       * Format: date
-       * @example "2010-09-07T00:00:00.000Z"
-       */
+      /** @example 2010-09-07 */
       birthDate: string;
       /**
-       * Format: int32
        * @description The ID of the pet.
        * @example 1
        */
@@ -179,20 +165,19 @@ export interface components {
        */
       name: string;
       /**
-       * Format: int32
        * @description The ID of the pet's owner.
        * @example 1
        */
       ownerId?: number;
+      /** @description The type of the pet. */
       type: components["schemas"]["PetTypeDto"];
       /** @description Vet visit bookings for this pet. */
       visits: readonly components["schemas"]["VisitDto"][];
     };
     PetFieldsDto: {
       /**
-       * Format: date
        * @description The date of birth of the pet.
-       * @example "2010-09-07T00:00:00.000Z"
+       * @example 2010-09-07
        */
       birthDate: string;
       /**
@@ -204,7 +189,6 @@ export interface components {
     };
     PetTypeDto: {
       /**
-       * Format: int32
        * @description The ID of the pet type.
        * @example 1
        */
@@ -222,19 +206,6 @@ export interface components {
        */
       name: string;
     };
-    ProblemDetail: {
-      detail?: string;
-      /** Format: uri */
-      instance?: string;
-      properties?: {
-        [key: string]: unknown;
-      };
-      /** Format: int32 */
-      status?: number;
-      title?: string;
-      /** Format: uri */
-      type?: string;
-    };
     RoleDto: {
       /**
        * @description The role's name
@@ -244,7 +215,6 @@ export interface components {
     };
     SpecialtyDto: {
       /**
-       * Format: int32
        * @description The ID of the specialty.
        * @example 1
        */
@@ -267,7 +237,7 @@ export interface components {
        */
       password?: string;
       /** @description The roles of an user */
-      roles?: components["schemas"]["RoleDto"][];
+      roles: components["schemas"]["RoleDto"][];
       /**
        * @description The username
        * @example john.doe
@@ -281,7 +251,6 @@ export interface components {
        */
       firstName: string;
       /**
-       * Format: int32
        * @description The ID of the vet.
        * @example 1
        */
@@ -296,9 +265,8 @@ export interface components {
     };
     VisitDto: {
       /**
-       * Format: date
        * @description The date of the visit.
-       * @example "2013-01-01T00:00:00.000Z"
+       * @example 2013-01-01
        */
       date?: string;
       /**
@@ -307,22 +275,17 @@ export interface components {
        */
       description: string;
       /**
-       * Format: int32
        * @description The ID of the visit.
        * @example 1
        */
       id: number;
       /** @description First name of the owner (server-populated). */
       ownerFirstName?: string;
-      /**
-       * Format: int32
-       * @description ID of the owner of the pet (server-populated).
-       */
+      /** @description ID of the owner of the pet (server-populated). */
       ownerId?: number;
       /** @description Last name of the owner (server-populated). */
       ownerLastName?: string;
       /**
-       * Format: int32
        * @description The ID of the pet.
        * @example 1
        */
@@ -332,9 +295,8 @@ export interface components {
     };
     VisitFieldsDto: {
       /**
-       * Format: date
        * @description The date of the visit.
-       * @example "2013-01-01T00:00:00.000Z"
+       * @example 2013-01-01
        */
       date?: string;
       /**
@@ -357,218 +319,18 @@ export type external = Record<string, never>;
 
 export interface operations {
 
-  redirectToSwagger: {
-    responses: {
-      /** @description OK */
-      200: {
-        content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-    };
-  };
-  redirectToSwagger_2: {
-    responses: {
-      /** @description OK */
-      200: {
-        content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-    };
-  };
-  redirectToSwagger_1: {
-    responses: {
-      /** @description OK */
-      200: {
-        content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-    };
-  };
-  redirectToSwagger_3: {
-    responses: {
-      /** @description OK */
-      200: {
-        content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-    };
-  };
-  redirectToSwagger_6: {
-    responses: {
-      /** @description OK */
-      200: {
-        content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-    };
-  };
-  redirectToSwagger_5: {
-    responses: {
-      /** @description OK */
-      200: {
-        content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-    };
-  };
-  redirectToSwagger_4: {
-    responses: {
-      /** @description OK */
-      200: {
-        content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-    };
-  };
   /** List owners */
   listOwners: {
     parameters: {
       query?: {
-        lastName?: string;
+        /** @description Search query (case-insensitive contains filter over name, address, city, telephone, pet names) */
+        q?: string;
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: {
           "application/json": components["schemas"]["OwnerDto"][];
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
         };
       };
     };
@@ -581,56 +343,16 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
-      200: {
+      201: {
         content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
       };
     };
   };
   /** Count owners */
   countOwners: {
     responses: {
-      /** @description OK */
       200: {
-        content: {
-          "*/*": number;
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
+        content: never;
       };
     };
   };
@@ -642,28 +364,9 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: {
-          "*/*": components["schemas"]["OwnerDto"];
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
+          "application/json": components["schemas"]["OwnerDto"];
         };
       };
     };
@@ -681,27 +384,8 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
       };
     };
   };
@@ -713,27 +397,8 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
       };
     };
   };
@@ -750,27 +415,8 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
-      200: {
+      201: {
         content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
       };
     };
   };
@@ -783,28 +429,9 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: {
-          "*/*": components["schemas"]["PetDto"];
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
+          "application/json": components["schemas"]["PetDto"];
         };
       };
     };
@@ -823,27 +450,8 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
       };
     };
   };
@@ -861,92 +469,31 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
+      201: {
+        content: never;
+      };
+    };
+  };
+  PetController_listPets: {
+    responses: {
       200: {
         content: never;
       };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
     };
   };
-  listPets: {
-    responses: {
-      /** @description OK */
-      200: {
-        content: {
-          "application/json": components["schemas"]["PetDto"][];
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-    };
-  };
-  getPet: {
+  PetController_getPet: {
     parameters: {
       path: {
         petId: number;
       };
     };
     responses: {
-      /** @description OK */
       200: {
-        content: {
-          "*/*": components["schemas"]["PetDto"];
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
+        content: never;
       };
     };
   };
-  updatePet: {
+  PetController_updatePet: {
     parameters: {
       path: {
         petId: number;
@@ -958,154 +505,55 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: never;
       };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
     };
   };
-  deletePet: {
+  PetController_deletePet: {
     parameters: {
       path: {
         petId: number;
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: never;
       };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
     };
   };
-  listPetTypes: {
+  PetTypeController_listPetTypes: {
     responses: {
-      /** @description OK */
       200: {
-        content: {
-          "application/json": components["schemas"]["PetTypeDto"][];
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
+        content: never;
       };
     };
   };
-  addPetType: {
+  PetTypeController_addPetType: {
     requestBody: {
       content: {
         "application/json": components["schemas"]["PetTypeFieldsDto"];
       };
     };
     responses: {
-      /** @description OK */
-      200: {
+      201: {
         content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
       };
     };
   };
-  getPetType: {
+  PetTypeController_getPetType: {
     parameters: {
       path: {
         petTypeId: number;
       };
     };
     responses: {
-      /** @description OK */
       200: {
-        content: {
-          "*/*": components["schemas"]["PetTypeDto"];
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
+        content: never;
       };
     };
   };
-  updatePetType: {
+  PetTypeController_updatePetType: {
     parameters: {
       path: {
         petTypeId: number;
@@ -1117,154 +565,55 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: never;
       };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
     };
   };
-  deletePetType: {
+  PetTypeController_deletePetType: {
     parameters: {
       path: {
         petTypeId: number;
       };
     };
     responses: {
-      /** @description OK */
+      204: {
+        content: never;
+      };
+    };
+  };
+  SpecialtyController_listSpecialties: {
+    responses: {
       200: {
         content: never;
       };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
     };
   };
-  listSpecialties: {
-    responses: {
-      /** @description OK */
-      200: {
-        content: {
-          "*/*": components["schemas"]["SpecialtyDto"][];
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-    };
-  };
-  addSpecialty: {
+  SpecialtyController_addSpecialty: {
     requestBody: {
       content: {
         "application/json": components["schemas"]["SpecialtyDto"];
       };
     };
     responses: {
-      /** @description OK */
-      200: {
+      201: {
         content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
       };
     };
   };
-  getSpecialty: {
+  SpecialtyController_getSpecialty: {
     parameters: {
       path: {
         specialtyId: number;
       };
     };
     responses: {
-      /** @description OK */
       200: {
-        content: {
-          "*/*": components["schemas"]["SpecialtyDto"];
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
+        content: never;
       };
     };
   };
-  updateSpecialty: {
+  SpecialtyController_updateSpecialty: {
     parameters: {
       path: {
         specialtyId: number;
@@ -1276,187 +625,69 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: never;
       };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
     };
   };
-  deleteSpecialty: {
+  SpecialtyController_deleteSpecialty: {
     parameters: {
       path: {
         specialtyId: number;
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: never;
       };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
     };
   };
-  addUser: {
+  UserController_addUser: {
     requestBody: {
       content: {
         "application/json": components["schemas"]["UserDto"];
       };
     };
     responses: {
-      /** @description OK */
-      200: {
+      201: {
         content: {
-          "*/*": components["schemas"]["UserDto"];
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
+          "application/json": components["schemas"]["UserDto"];
         };
       };
     };
   };
-  listVets: {
+  VetController_listVets: {
     responses: {
-      /** @description OK */
       200: {
-        content: {
-          "*/*": components["schemas"]["VetDto"][];
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
+        content: never;
       };
     };
   };
-  addVet: {
+  VetController_addVet: {
     requestBody: {
       content: {
         "application/json": components["schemas"]["VetDto"];
       };
     };
     responses: {
-      /** @description OK */
-      200: {
+      201: {
         content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
       };
     };
   };
-  getVet: {
+  VetController_getVet: {
     parameters: {
       path: {
         vetId: number;
       };
     };
     responses: {
-      /** @description OK */
       200: {
-        content: {
-          "*/*": components["schemas"]["VetDto"];
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
+        content: never;
       };
     };
   };
-  updateVet: {
+  VetController_updateVet: {
     parameters: {
       path: {
         vetId: number;
@@ -1468,154 +699,55 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: never;
       };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
     };
   };
-  deleteVet: {
+  VetController_deleteVet: {
     parameters: {
       path: {
         vetId: number;
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: never;
       };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
     };
   };
-  listVisits: {
+  VisitController_listVisits: {
     responses: {
-      /** @description OK */
       200: {
-        content: {
-          "*/*": components["schemas"]["VisitDto"][];
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
+        content: never;
       };
     };
   };
-  addVisit: {
+  VisitController_addVisit: {
     requestBody: {
       content: {
         "application/json": components["schemas"]["VisitDto"];
       };
     };
     responses: {
-      /** @description OK */
-      200: {
+      201: {
         content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
       };
     };
   };
-  getVisit: {
+  VisitController_getVisit: {
     parameters: {
       path: {
         visitId: number;
       };
     };
     responses: {
-      /** @description OK */
       200: {
-        content: {
-          "*/*": components["schemas"]["VisitDto"];
-        };
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
+        content: never;
       };
     };
   };
-  updateVisit: {
+  VisitController_updateVisit: {
     parameters: {
       path: {
         visitId: number;
@@ -1627,58 +759,20 @@ export interface operations {
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: never;
       };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
     };
   };
-  deleteVisit: {
+  VisitController_deleteVisit: {
     parameters: {
       path: {
         visitId: number;
       };
     };
     responses: {
-      /** @description OK */
       200: {
         content: never;
-      };
-      /** @description Bad Request */
-      400: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
-      };
-      /** @description Not Found */
-      404: {
-        content: {
-          "*/*": string;
-        };
-      };
-      /** @description Internal Server Error */
-      500: {
-        content: {
-          "*/*": components["schemas"]["ProblemDetail"];
-        };
       };
     };
   };

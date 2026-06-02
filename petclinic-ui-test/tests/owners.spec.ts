@@ -46,38 +46,46 @@ test.describe('Owners Page', () => {
     expect(ApiClient.sorted(actualFullNames)).toEqual(ApiClient.sorted(expectedFullNames));
   });
 
-  test('filters owners by last name prefix', async ({ page }) => {
-    // Fetch all owners and choose a prefix
+  test('filters owners live by a mid-word city fragment (case-insensitive contains)', async ({ page }) => {
+    // Derive a mid-word, lower-cased fragment from a real owner's city
     const allOwners = await apiClient.fetchOwners();
-    const prefix = ApiClient.choosePrefixFrom(allOwners);
+    const source = allOwners.find(o => o.city && o.city.trim().length >= 4);
+    expect(source).toBeDefined();
+    const fragment = source!.city!.trim().slice(1, 4).toLowerCase();
 
-    // Fetch filtered owners from API
-    const expectedFilteredOwners = await apiClient.fetchOwnersByPrefix(prefix);
-    const expectedFilteredFullNames = ApiClient.getFullNames(expectedFilteredOwners);
+    // Expected result set straight from the API
+    const expectedOwners = await apiClient.fetchOwnersByQuery(fragment);
+    const expectedFullNames = ApiClient.getFullNames(expectedOwners);
+    expect(expectedFullNames.length).toBeGreaterThan(0);
 
-    // Open the owners page
     const ownersPage = new OwnersPage(page);
     await ownersPage.open();
 
-    // Perform search
-    await ownersPage.searchByLastNamePrefix(prefix);
-    await ownersPage.waitForOwnersCount(expectedFilteredFullNames.length);
+    // Type into the search box — no button; the list refreshes after the debounce
+    await ownersPage.search(fragment);
+    await ownersPage.waitForOwnersCount(expectedFullNames.length);
 
-    // Get filtered results
-    const actualFilteredFullNames = await ownersPage.getOwnerFullNames();
+    const actualFullNames = await ownersPage.getOwnerFullNames();
+    expect(ApiClient.sorted(actualFullNames)).toEqual(ApiClient.sorted(expectedFullNames));
+  });
 
-    // Assertions
-    expect(actualFilteredFullNames.length).toBeGreaterThan(0);
+  test('filters owners by pet name', async ({ page }) => {
+    const allOwners = await apiClient.fetchOwners();
+    const withPet = allOwners.find(o => o.pets && o.pets.length > 0 && o.pets[0].name);
+    expect(withPet).toBeDefined();
+    const petName = withPet!.pets![0].name;
 
-    // Verify all results match the prefix
-    for (const fullName of actualFilteredFullNames) {
-      const lastName = ApiClient.extractLastName(fullName);
-      expect(lastName.toLowerCase()).toMatch(new RegExp(`^${prefix.toLowerCase()}`));
-    }
+    const expectedOwners = await apiClient.fetchOwnersByQuery(petName);
+    const expectedFullNames = ApiClient.getFullNames(expectedOwners);
+    expect(expectedFullNames).toContain(`${withPet!.firstName} ${withPet!.lastName}`.trim());
 
-    // Verify exact match with API results
-    expect(ApiClient.sorted(actualFilteredFullNames)).toEqual(
-      ApiClient.sorted(expectedFilteredFullNames)
-    );
+    const ownersPage = new OwnersPage(page);
+    await ownersPage.open();
+
+    await ownersPage.search(petName);
+    await ownersPage.waitForOwnersCount(expectedFullNames.length);
+
+    const actualFullNames = await ownersPage.getOwnerFullNames();
+    expect(ApiClient.sorted(actualFullNames)).toEqual(ApiClient.sorted(expectedFullNames));
   });
 });

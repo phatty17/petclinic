@@ -12,7 +12,13 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -56,14 +62,21 @@ export class OwnerController {
   ) {}
 
   /**
-   * GET /api/owners?lastName= — filters by a case-sensitive prefix on last name
-   * (`WHERE last_name LIKE :lastName%`); an empty lastName matches every owner.
+   * GET /api/owners?q= — case-insensitive 'contains' filter over the visible
+   * table content: the "first last" name, address, city, telephone, and pet
+   * names; an empty q matches every owner.
    */
   @Get()
   @ApiOperation({ operationId: 'listOwners', summary: 'List owners' })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    type: String,
+    description: 'Search query (case-insensitive contains filter over name, address, city, telephone, pet names)',
+  })
   @ApiOkResponse({ type: [OwnerDto] })
-  async listOwners(@Query('lastName') lastName = ''): Promise<OwnerDto[]> {
-    const owners = await this.findByLastNameStartingWith(lastName);
+  async listOwners(@Query('q') q = ''): Promise<OwnerDto[]> {
+    const owners = await this.findByVisibleText(q);
     return toOwnerDtoCollection(owners);
   }
 
@@ -244,12 +257,17 @@ export class OwnerController {
   }
 
   /**
-   * Finds owners whose last name starts with the given prefix (case-sensitive
-   * LIKE). Implemented with a QueryBuilder, escaping LIKE wildcards in the
-   * user-supplied prefix.
+   * Finds owners whose visible table row contains the query, case-insensitively
+   * (ILIKE '%q%'): the concatenated "first last" name, address, city, telephone,
+   * or any pet name. Pet names are matched with an EXISTS subquery (not a join
+   * filter) so a match on one pet still returns the owner with ALL its pets.
+   * LIKE wildcards in the user-supplied query are escaped; an empty query
+   * matches every owner. ILIKE / || / COALESCE are PostgreSQL syntax — the only
+   * supported database.
    */
-  private async findByLastNameStartingWith(lastName: string): Promise<Owner[]> {
-    const escaped = lastName.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+  private async findByVisibleText(q: string): Promise<Owner[]> {
+    const escaped = q.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+    const term = `%${escaped}%`;
     // Eager-load pets (+ each pet's type and visits) so the owner mapper can
     // project them, so each owner in the list carries its full pets/visits.
     // Order by owner id to keep the list stable (id-ascending).
@@ -258,7 +276,15 @@ export class OwnerController {
       .leftJoinAndSelect('owner.pets', 'pet')
       .leftJoinAndSelect('pet.type', 'type')
       .leftJoinAndSelect('pet.visits', 'visit')
-      .where("owner.lastName LIKE :prefix ESCAPE '\\'", { prefix: `${escaped}%` })
+      .where(
+        "COALESCE(owner.firstName, '') || ' ' || COALESCE(owner.lastName, '') ILIKE :term ESCAPE '\\' " +
+          "OR COALESCE(owner.address, '') ILIKE :term ESCAPE '\\' " +
+          "OR COALESCE(owner.city, '') ILIKE :term ESCAPE '\\' " +
+          "OR COALESCE(owner.telephone, '') ILIKE :term ESCAPE '\\' " +
+          'OR EXISTS (SELECT 1 FROM pets pet_match WHERE pet_match.owner_id = owner.id ' +
+          "AND pet_match.name ILIKE :term ESCAPE '\\')",
+        { term },
+      )
       .orderBy('owner.id', 'ASC')
       .getMany();
   }
