@@ -1,5 +1,10 @@
 import axios, { AxiosInstance } from 'axios';
 
+export interface PetDto {
+  id?: number;
+  name: string;
+}
+
 export interface OwnerDto {
   firstName: string;
   lastName: string;
@@ -7,6 +12,7 @@ export interface OwnerDto {
   address?: string;
   city?: string;
   telephone?: string;
+  pets?: PetDto[];
 }
 
 export interface VisitDto {
@@ -35,9 +41,9 @@ export class ApiClient {
     return response.data;
   }
 
-  async fetchOwnersByPrefix(prefix: string): Promise<OwnerDto[]> {
+  async fetchOwnersByQuery(q: string): Promise<OwnerDto[]> {
     const response = await this.client.get<OwnerDto[]>('/owners', {
-      params: { lastName: prefix }
+      params: { q }
     });
     return response.data;
   }
@@ -61,21 +67,4 @@ export class ApiClient {
     return [...rows].sort((a, b) => a.date.localeCompare(b.date));
   }
 
-  static extractLastName(fullName: string): string {
-    const firstSpace = fullName.indexOf(' ');
-    if (firstSpace < 0 || firstSpace === fullName.length - 1) {
-      return fullName;
-    }
-    return fullName.substring(firstSpace + 1);
-  }
-
-  static choosePrefixFrom(owners: OwnerDto[]): string {
-    for (const owner of owners) {
-      if (owner.lastName && owner.lastName.trim()) {
-        const lastName = owner.lastName.trim();
-        return lastName.substring(0, Math.min(2, lastName.length));
-      }
-    }
-    throw new Error('No owners available to derive search prefix');
-  }
 }
