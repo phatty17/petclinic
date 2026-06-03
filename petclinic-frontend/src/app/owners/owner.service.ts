@@ -1,10 +1,18 @@
 import { Injectable } from '@angular/core';
 import { Owner } from './owner';
+import { OwnerPage } from './owner-page';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import { HandleError, HttpErrorHandler } from '../error.service';
+
+export interface SearchOwnersParams {
+  q?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
 
 @Injectable()
 export class OwnerService {
@@ -50,10 +58,21 @@ export class OwnerService {
       .pipe(catchError(this.handlerError('deleteOwner', [ownerId])));
   }
 
-  searchOwners(q: string): Observable<Owner[]> {
-    const params = new HttpParams().set('q', q);
-    return this.http
-      .get<Owner[]>(this.entityUrl, { params })
-      .pipe(catchError(this.handlerError('searchOwners', [])));
+  searchOwners({ q, page, size, sort }: SearchOwnersParams): Observable<OwnerPage> {
+    let params = new HttpParams();
+    if (q) {
+      params = params.set('q', q);
+    }
+    if (page !== undefined) {
+      params = params.set('page', page);
+    }
+    if (size !== undefined) {
+      params = params.set('size', size);
+    }
+    if (sort) {
+      params = params.set('sort', sort);
+    }
+    // No catchError here: errors propagate to the component so it can show a snackbar.
+    return this.http.get<OwnerPage>(this.entityUrl, { params });
   }
 }

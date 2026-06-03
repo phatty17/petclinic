@@ -151,6 +151,30 @@ export interface components {
        */
       telephone: string;
     };
+    PageDto: {
+      /** @description The items of the current page. */
+      content: unknown[][];
+      /**
+       * @description Current page index (0-based).
+       * @example 0
+       */
+      number: number;
+      /**
+       * @description Page size.
+       * @example 10
+       */
+      size: number;
+      /**
+       * @description Total number of items across all pages.
+       * @example 42
+       */
+      totalElements: number;
+      /**
+       * @description Total number of pages.
+       * @example 5
+       */
+      totalPages: number;
+    };
     PetDto: {
       /** @example 2010-09-07 */
       birthDate: string;
@@ -325,12 +349,20 @@ export interface operations {
       query?: {
         /** @description Search query (case-insensitive contains filter over name, address, city, telephone, pet names) */
         q?: string;
+        /** @description Page index (0-based). */
+        page?: number;
+        /** @description Page size (1–100). */
+        size?: number;
+        /** @description Sort spec in 'col,dir' format; col ∈ lastName|city|address, dir ∈ asc|desc. */
+        sort?: string;
       };
     };
     responses: {
       200: {
         content: {
-          "application/json": components["schemas"]["OwnerDto"][];
+          "application/json": components["schemas"]["PageDto"] & {
+            content?: components["schemas"]["OwnerDto"][];
+          };
         };
       };
     };

@@ -132,13 +132,33 @@ describe('OwnerService', () => {
   });
 
   it('search owners with a q contains query', () => {
-    ownerService.searchOwners('george fra').subscribe((owners) => {
-      expect(owners).toEqual(expectedOwners);
+    const expectedPage = {
+      content: expectedOwners,
+      totalElements: expectedOwners.length,
+      totalPages: 1,
+      number: 0,
+      size: 10
+    };
+
+    ownerService.searchOwners({q: 'george fra'}).subscribe((page) => {
+      expect(page).toEqual(expectedPage);
     });
 
     const req = httpTestingController.expectOne((r) => r.url === ownerService.entityUrl);
     expect(req.request.method).toEqual('GET');
     expect(req.request.params.get('q')).toEqual('george fra');
-    req.flush(expectedOwners);
+    req.flush(expectedPage);
+  });
+
+  it('sends page, size and sort params when provided', () => {
+    ownerService.searchOwners({q: '', page: 2, size: 5, sort: 'city,asc'}).subscribe();
+
+    const req = httpTestingController.expectOne((r) => r.url === ownerService.entityUrl);
+    expect(req.request.method).toEqual('GET');
+    expect(req.request.params.get('q')).toBeNull();
+    expect(req.request.params.get('page')).toEqual('2');
+    expect(req.request.params.get('size')).toEqual('5');
+    expect(req.request.params.get('sort')).toEqual('city,asc');
+    req.flush({content: [], totalElements: 0, totalPages: 0, number: 2, size: 5});
   });
 });

@@ -6,12 +6,15 @@ import {DebugElement, NO_ERRORS_SCHEMA} from '@angular/core';
 
 import {OwnerListComponent} from './owner-list.component';
 import {FormsModule} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import { OwnerService } from '../owner.service';
 import {Owner} from '../owner';
+import {OwnerPage} from '../owner-page';
 import {Observable, of} from 'rxjs';
 import {RouterTestingModule} from '@angular/router/testing';
 import {CommonModule} from '@angular/common';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {PartsModule} from '../../parts/parts.module';
 import {ActivatedRouteStub} from '../../testing/router-stubs';
 import {OwnerDetailComponent} from '../owner-detail/owner-detail.component';
@@ -23,7 +26,7 @@ import Spy = jasmine.Spy;
 
 
 class OwnerServiceStub {
-  searchOwners(q: string): Observable<Owner[]> {
+  searchOwners(params: object): Observable<OwnerPage> {
     return of();
   }
 }
@@ -34,6 +37,8 @@ describe('OwnerListComponent', () => {
   let fixture: ComponentFixture<OwnerListComponent>;
   let ownerService = new OwnerServiceStub();
   let searchOwnersSpy: Spy;
+  let router: Router;
+  let navigateSpy: Spy;
   let de: DebugElement;
   let el: HTMLElement;
 
@@ -48,12 +53,13 @@ describe('OwnerListComponent', () => {
     pets: []
   };
   let testOwners: Owner[];
+  let testPage: OwnerPage;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [DummyComponent],
       schemas: [NO_ERRORS_SCHEMA],
-      imports: [CommonModule, FormsModule, PartsModule, OwnersModule,
+      imports: [CommonModule, FormsModule, PartsModule, NoopAnimationsModule, MatSnackBarModule, OwnersModule,
         RouterTestingModule.withRoutes(
           [{path: 'owners', component: OwnerListComponent},
             {path: 'owners/add', component: OwnerAddComponent},
@@ -70,41 +76,55 @@ describe('OwnerListComponent', () => {
 
   beforeEach(() => {
     testOwners = [testOwner];
+    testPage = {
+      content: testOwners,
+      totalElements: testOwners.length,
+      totalPages: 1,
+      number: 0,
+      size: 10
+    };
 
     fixture = TestBed.createComponent(OwnerListComponent);
     component = fixture.componentInstance;
     ownerService = fixture.debugElement.injector.get(OwnerService);
     searchOwnersSpy = spyOn(ownerService, 'searchOwners')
-      .and.returnValue(of(testOwners));
+      .and.returnValue(of(testPage));
+    router = fixture.debugElement.injector.get(Router);
+    navigateSpy = spyOn(router, 'navigate').and.resolveTo(true);
   });
 
   it('should create OwnerListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('loads all owners on init with an empty query (after the debounce)', fakeAsync(() => {
+  it('loads owners on init from the queryParams (default page/size)', fakeAsync(() => {
     fixture.detectChanges();
-    tick(300);
+    tick();
 
-    expect(searchOwnersSpy).toHaveBeenCalledWith('');
+    expect(searchOwnersSpy).toHaveBeenCalledWith(
+      jasmine.objectContaining({q: '', page: 0, size: 10})
+    );
     expect(component.owners).toEqual(testOwners);
+    expect(component.totalElements).toEqual(testOwners.length);
     expect(component.isOwnersDataReceived).toBe(true);
+    expect(component.isLoading).toBe(false);
   }));
 
   it('shows the owner full name after the initial load', fakeAsync(() => {
     fixture.detectChanges();
-    tick(300);
+    tick();
     fixture.detectChanges();
 
     de = fixture.debugElement.query(By.css('.ownerFullName'));
     el = de.nativeElement;
-    expect(el.innerText).toBe('George Franklin');
+    expect(el.innerText.trim()).toBe('George Franklin');
   }));
 
-  it('debounces keystrokes into a single search with the final term', fakeAsync(() => {
+  it('navigates (does not fetch) when the search term changes, debounced to the final term', fakeAsync(() => {
     fixture.detectChanges();
-    tick(300);
+    tick();
     searchOwnersSpy.calls.reset();
+    navigateSpy.calls.reset();
 
     component.searchControl.setValue('F');
     tick(100);
@@ -113,21 +133,25 @@ describe('OwnerListComponent', () => {
     component.searchControl.setValue('Fra');
     tick(300);
 
-    expect(searchOwnersSpy).toHaveBeenCalledTimes(1);
-    expect(searchOwnersSpy).toHaveBeenCalledWith('Fra');
+    // Input streams only navigate; fetching happens via queryParams.
+    expect(searchOwnersSpy).not.toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledTimes(1);
+    expect(navigateSpy).toHaveBeenCalledWith(
+      [], jasmine.objectContaining({queryParams: jasmine.objectContaining({q: 'Fra'})})
+    );
   }));
 
-  it('does not repeat the search when the term is unchanged', fakeAsync(() => {
+  it('does not navigate again when the term is unchanged', fakeAsync(() => {
     fixture.detectChanges();
-    tick(300);
-    searchOwnersSpy.calls.reset();
+    tick();
+    navigateSpy.calls.reset();
 
     component.searchControl.setValue('Fra');
     tick(300);
     component.searchControl.setValue('Fra');
     tick(300);
 
-    expect(searchOwnersSpy).toHaveBeenCalledTimes(1);
+    expect(navigateSpy).toHaveBeenCalledTimes(1);
   }));
 
 });

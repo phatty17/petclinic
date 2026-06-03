@@ -15,37 +15,55 @@
       </div>
     </form>
 
-    <div *ngIf="owners && owners.length === 0">No owners found matching "{{searchControl.value}}"</div>
-    <div class="table-responsive" id="ownersTable"  *ngIf="owners">
-      <table class="table table-striped">
-        <thead>
-        <tr>
-          <th>Name</th>
-          <th>Address</th>
-          <th>City</th>
-          <th>Telephone</th>
-          <th>Pets</th>
-        </tr>
-        </thead>
+    <div *ngIf="owners && owners.length === 0 && !isLoading">
+      No owners found matching "{{searchControl.value}}"
+    </div>
 
-        <tbody>
-        <tr *ngFor="let owner of owners">
-          <td class="ownerFullName"><a routerLink="/owners/{{owner.id}}" routerLinkActive="active"
-                                       (click)="onSelect(owner)">{{ owner.firstName }} {{ owner.lastName }}</a></td>
-          <td>{{ owner.address }}</td>
-          <td>{{ owner.city }}</td>
-          <td>{{ owner.telephone }}</td>
-          <td>
-        <tr *ngFor="let pet of owner.pets">
-          {{ pet.name }}
-        </tr>
-        </td>
-        </tr>
-        </tbody>
-      </table>
-      <div>
-        <button *ngIf="isOwnersDataReceived" class="btn btn-default" (click)="addOwner()">Add Owner</button>
+    <div class="owners-table-wrapper">
+      <!-- [hidden] (not *ngIf) so the MatSort directive exists when ngAfterViewInit wires sortChange -->
+      <div class="table-responsive" id="ownersTable" [hidden]="!owners">
+        <table class="table table-striped" [class.loading]="isLoading">
+          <thead matSort matSortDisableClear>
+          <tr>
+            <th mat-sort-header="lastName">Name</th>
+            <th mat-sort-header="address">Address</th>
+            <th mat-sort-header="city">City</th>
+            <th>Telephone</th>
+            <th>Pets</th>
+          </tr>
+          </thead>
+
+          <tbody>
+          <tr *ngFor="let owner of owners">
+            <td class="ownerFullName">
+              <a routerLink="/owners/{{owner.id}}" routerLinkActive="active" (click)="onSelect(owner)">
+                <ng-container *ngIf="isNameSortActive(); else plainName">{{ owner.firstName }}
+                  <strong>{{ owner.lastName }}</strong></ng-container>
+                <ng-template #plainName>{{ owner.firstName }} {{ owner.lastName }}</ng-template>
+              </a>
+            </td>
+            <td>{{ owner.address }}</td>
+            <td>{{ owner.city }}</td>
+            <td>{{ owner.telephone }}</td>
+            <td>
+          <tr *ngFor="let pet of owner.pets">
+            {{ pet.name }}
+          </tr>
+          </td>
+          </tr>
+          </tbody>
+        </table>
       </div>
+
+      <div class="loading-overlay" *ngIf="isLoading">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    </div>
+
+    <mat-paginator [pageSizeOptions]="[5, 10, 20]" [length]="totalElements"></mat-paginator>
+
+    <div>
+      <button *ngIf="isOwnersDataReceived" class="btn btn-default" (click)="addOwner()">Add Owner</button>
     </div>
   </div>
 </div>
