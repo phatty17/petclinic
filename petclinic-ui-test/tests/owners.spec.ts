@@ -26,10 +26,10 @@ test.describe('Owners Page', () => {
     console.log(`Screenshot saved: ${screenshotPath}`);
   });
 
-  test('shows all owners on initial load', async ({ page }) => {
+  test('shows the first page of owners on initial load', async ({ page }) => {
     const ownersPage = new OwnersPage(page);
 
-    // Fetch expected owners from API
+    // Fetch the expected first page from the API (same default page/size as the UI)
     const expectedOwners = await apiClient.fetchOwners();
     const expectedFullNames = ApiClient.getFullNames(expectedOwners);
 

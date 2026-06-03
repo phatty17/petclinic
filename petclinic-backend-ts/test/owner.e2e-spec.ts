@@ -87,7 +87,7 @@ describe('OwnerController (e2e)', () => {
     if (!available) return;
     const res = await http().get('/api/owners').expect(200);
     expect(res.headers['content-type']).toMatch(/application\/json/);
-    const match = res.body.find((o: { id: number }) => o.id === ownerId);
+    const match = res.body.content.find((o: { id: number }) => o.id === ownerId);
     expect(match).toMatchObject({ id: ownerId, firstName: 'George', lastName: 'Franklin' });
   });
 
@@ -104,7 +104,7 @@ describe('OwnerController (e2e)', () => {
       telephone: '0000000000',
     });
 
-  const ids = (body: { id: number }[]) => body.map((o) => o.id);
+  const ids = (body: { content: { id: number }[] }) => body.content.map((o) => o.id);
 
   it('search_byLastNameFragment_caseInsensitive', async () => {
     if (!available) return;
@@ -130,7 +130,7 @@ describe('OwnerController (e2e)', () => {
   it('search_reversedNameOrder_doesNotMatch', async () => {
     if (!available) return;
     const res = await http().get('/api/owners').query({ q: 'franklin geo' }).expect(200);
-    expect(res.body).toEqual([]);
+    expect(res.body.content).toEqual([]);
   });
 
   it('search_byAddressFragment', async () => {
@@ -160,7 +160,7 @@ describe('OwnerController (e2e)', () => {
     await savePet(ds, georgeOwner, dogType, { name: 'Max' });
     const res = await http().get('/api/owners').query({ q: 'osy' }).expect(200);
     expect(ids(res.body)).toEqual([ownerId]);
-    const petNames = res.body[0].pets.map((p: { name: string }) => p.name).sort();
+    const petNames = res.body.content[0].pets.map((p: { name: string }) => p.name).sort();
     expect(petNames).toEqual(['Max', 'Rosy']);
   });
 
@@ -171,13 +171,13 @@ describe('OwnerController (e2e)', () => {
     expect(ids(res.body)).toEqual([discount.id]);
 
     const underscore = await http().get('/api/owners').query({ q: '_' }).expect(200);
-    expect(underscore.body).toEqual([]);
+    expect(underscore.body.content).toEqual([]);
   });
 
   it('search_noMatch_returnsEmpty', async () => {
     if (!available) return;
     const res = await http().get('/api/owners').query({ q: 'zzz-no-such' }).expect(200);
-    expect(res.body).toEqual([]);
+    expect(res.body.content).toEqual([]);
   });
 
   it('search_emptyQ_returnsAllOwners', async () => {

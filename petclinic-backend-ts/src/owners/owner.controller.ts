@@ -14,14 +14,15 @@ import {
 } from '@nestjs/common';
 import {
   ApiCreatedResponse,
+  ApiExtraModels,
   ApiOkResponse,
   ApiOperation,
-  ApiQuery,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { OrderByCondition, Repository } from 'typeorm';
 
 import { Owner } from './owner.entity';
 import { Pet } from '../pets/pet.entity';
@@ -30,11 +31,14 @@ import { PetType } from '../pet-types/pet-type.entity';
 
 import { OwnerDto } from './dto/owner.dto';
 import { OwnerFieldsDto } from './dto/owner-fields.dto';
+import { ListOwnersQueryDto } from './dto/list-owners-query.dto';
+import { PageDto } from '../common/dto/page.dto';
 import { PetDto } from '../pets/dto/pet.dto';
 import { PetFieldsDto } from '../pets/dto/pet-fields.dto';
 import { VisitFieldsDto } from '../visits/dto/visit-fields.dto';
 
 import { toOwner, toOwnerDto, toOwnerDtoCollection } from './owner.mapper';
+import { buildSortOrder } from './owner-sort';
 import { toPetDto, toPetFromFields } from '../pets/pet.mapper';
 import { toVisitFromFields } from '../visits/visit.mapper';
 
@@ -62,22 +66,39 @@ export class OwnerController {
   ) {}
 
   /**
-   * GET /api/owners?q= — case-insensitive 'contains' filter over the visible
-   * table content: the "first last" name, address, city, telephone, and pet
-   * names; an empty q matches every owner.
+   * GET /api/owners?q=&page=&size= — case-insensitive 'contains' filter over
+   * the visible table content: the "first last" name, address, city,
+   * telephone, and pet names; an empty q matches every owner. Returns one
+   * page of results wrapped in a PageDto envelope.
    */
   @Get()
   @ApiOperation({ operationId: 'listOwners', summary: 'List owners' })
-  @ApiQuery({
-    name: 'q',
-    required: false,
-    type: String,
-    description: 'Search query (case-insensitive contains filter over name, address, city, telephone, pet names)',
+  @ApiExtraModels(PageDto, OwnerDto)
+  @ApiOkResponse({
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(PageDto) },
+        {
+          properties: {
+            content: {
+              type: 'array',
+              items: { $ref: getSchemaPath(OwnerDto) },
+            },
+          },
+        },
+      ],
+    },
   })
-  @ApiOkResponse({ type: [OwnerDto] })
-  async listOwners(@Query('q') q = ''): Promise<OwnerDto[]> {
-    const owners = await this.findByVisibleText(q);
-    return toOwnerDtoCollection(owners);
+  async listOwners(@Query() query: ListOwnersQueryDto): Promise<PageDto<OwnerDto>> {
+    const { q = '', page, size, sort } = query;
+    const [owners, totalElements] = await this.findByVisibleText(q, page, size, buildSortOrder(sort));
+    return {
+      content: toOwnerDtoCollection(owners),
+      totalElements,
+      totalPages: Math.ceil(totalElements / size),
+      number: page,
+      size,
+    };
   }
 
   /** GET /api/owners/count — publicly reachable (@PermitAll). */
@@ -257,25 +278,50 @@ export class OwnerController {
   }
 
   /**
-   * Finds owners whose visible table row contains the query, case-insensitively
-   * (ILIKE '%q%'): the concatenated "first last" name, address, city, telephone,
-   * or any pet name. Pet names are matched with an EXISTS subquery (not a join
-   * filter) so a match on one pet still returns the owner with ALL its pets.
-   * LIKE wildcards in the user-supplied query are escaped; an empty query
-   * matches every owner. ILIKE / || / COALESCE are PostgreSQL syntax — the only
-   * supported database.
+   * Finds one page of the owners matching the visible-text filter (see
+   * visibleTextFilter) together with the total match count.
    */
-  private async findByVisibleText(q: string): Promise<Owner[]> {
-    const escaped = q.replace(/[\\%_]/g, (ch) => `\\${ch}`);
-    const term = `%${escaped}%`;
+  private async findByVisibleText(
+    q: string,
+    page: number,
+    size: number,
+    order: OrderByCondition,
+  ): Promise<[Owner[], number]> {
+    // Count and content are two separate queries sharing the same WHERE:
+    // getManyAndCount on a query with one-to-many joins can miscount because
+    // the join inflates the row set. The filter only references owner columns
+    // (pet names via EXISTS), so the count query needs no joins at all.
+    const totalElements = await this.visibleTextFilter(q).getCount();
     // Eager-load pets (+ each pet's type and visits) so the owner mapper can
     // project them, so each owner in the list carries its full pets/visits.
-    // Order by owner id to keep the list stable (id-ascending).
-    return this.ownerRepository
-      .createQueryBuilder('owner')
+    // The sort chain always ends in `owner.id ASC` (see buildSortOrder), so
+    // the order stays stable. skip/take paginate on distinct owners despite
+    // the row-inflating joins.
+    const owners = await this.visibleTextFilter(q)
       .leftJoinAndSelect('owner.pets', 'pet')
       .leftJoinAndSelect('pet.type', 'type')
       .leftJoinAndSelect('pet.visits', 'visit')
+      .orderBy(order)
+      .skip(page * size)
+      .take(size)
+      .getMany();
+    return [owners, totalElements];
+  }
+
+  /**
+   * Builds a query selecting owners whose visible table row contains the
+   * query, case-insensitively (ILIKE '%q%'): the concatenated "first last"
+   * name, address, city, telephone, or any pet name (EXISTS subquery, not a
+   * join filter, so a match on one pet still returns the owner with ALL its
+   * pets). LIKE wildcards in the user-supplied query are escaped; an empty
+   * query matches every owner. ILIKE / || / COALESCE are PostgreSQL syntax —
+   * the only supported database.
+   */
+  private visibleTextFilter(q: string) {
+    const escaped = q.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+    const term = `%${escaped}%`;
+    return this.ownerRepository
+      .createQueryBuilder('owner')
       .where(
         "COALESCE(owner.firstName, '') || ' ' || COALESCE(owner.lastName, '') ILIKE :term ESCAPE '\\' " +
           "OR COALESCE(owner.address, '') ILIKE :term ESCAPE '\\' " +
@@ -284,9 +330,7 @@ export class OwnerController {
           'OR EXISTS (SELECT 1 FROM pets pet_match WHERE pet_match.owner_id = owner.id ' +
           "AND pet_match.name ILIKE :term ESCAPE '\\')",
         { term },
-      )
-      .orderBy('owner.id', 'ASC')
-      .getMany();
+      );
   }
 
   /**

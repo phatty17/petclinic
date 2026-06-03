@@ -26,6 +26,14 @@ export interface VisitDto {
   ownerLastName?: string;
 }
 
+export interface PageDto<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
 export class ApiClient {
   private client: AxiosInstance;
 
@@ -36,16 +44,19 @@ export class ApiClient {
     });
   }
 
+  // GET /api/owners returns a page envelope. Without params this is the same
+  // first page (size 10, id-ascending) the owners screen displays on load, so
+  // UI-vs-API comparisons stay aligned with what the table actually shows.
   async fetchOwners(): Promise<OwnerDto[]> {
-    const response = await this.client.get<OwnerDto[]>('/owners');
-    return response.data;
+    const response = await this.client.get<PageDto<OwnerDto>>('/owners');
+    return response.data.content;
   }
 
   async fetchOwnersByQuery(q: string): Promise<OwnerDto[]> {
-    const response = await this.client.get<OwnerDto[]>('/owners', {
+    const response = await this.client.get<PageDto<OwnerDto>>('/owners', {
       params: { q }
     });
-    return response.data;
+    return response.data.content;
   }
 
   async fetchVisits(): Promise<VisitDto[]> {
