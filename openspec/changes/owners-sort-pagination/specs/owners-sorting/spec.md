@@ -12,6 +12,10 @@ The Pets column SHALL NOT be sortable.
 - **WHEN** the user clicks the currently sorted column header
 - **THEN** the sort direction toggles between ascending and descending
 
+#### Scenario: Sort never clears once active
+- **WHEN** the user clicks the currently sorted column header repeatedly (third, fourth, … click)
+- **THEN** the sort keeps cycling asc↔desc and is never deactivated (`matSortDisableClear`)
+
 #### Scenario: Click different column resets to ascending
 - **WHEN** the user clicks a different column than the currently sorted one
 - **THEN** the new column sorts ascending and the previous sort is cleared
@@ -36,13 +40,21 @@ The final field in every sort chain SHALL be `id ASC` as a tiebreaker.
 - **WHEN** the client sends `?sort=address,asc`
 - **THEN** the backend applies `ORDER BY address ASC, lastName ASC, firstName ASC, id ASC`
 
-#### Scenario: Descending sort direction is respected
+#### Scenario: Descending sort mirrors the whole chain
 - **WHEN** the client sends `?sort=lastName,desc`
-- **THEN** the backend applies `ORDER BY lastName DESC, firstName DESC, id ASC` (tiebreaker always ASC)
+- **THEN** the backend applies `ORDER BY lastName DESC, firstName DESC, id ASC` — `desc` flips every field in the chain except the `id` tiebreaker, which always stays ASC
 
 #### Scenario: No sort param falls back to id ascending
 - **WHEN** the client sends no `sort` param
 - **THEN** the backend applies `ORDER BY id ASC`
+
+#### Scenario: Unknown sort column is rejected
+- **WHEN** the client sends `?sort=pets,asc` (or any column outside `lastName`, `city`, `address`)
+- **THEN** the backend responds `400 Bad Request` with an RFC-7807 ProblemDetail body
+
+#### Scenario: Unknown sort direction is rejected
+- **WHEN** the client sends `?sort=city,sideways` (or any direction outside `asc`, `desc`)
+- **THEN** the backend responds `400 Bad Request` with an RFC-7807 ProblemDetail body
 
 ### Requirement: Sort state in URL
 The active sort column and direction SHALL be reflected in the URL query string.
@@ -55,12 +67,16 @@ The active sort column and direction SHALL be reflected in the URL query string.
 - **WHEN** the user opens the owners list with `?sort=address,desc`
 - **THEN** the table renders with the Address column header showing a descending sort indicator and rows sorted accordingly
 
-### Requirement: Name column rendered as "Lastname, Firstname"
-The Name column header SHALL be labelled "Name" and cells SHALL display the owner's name as `lastName, firstName` (phonebook convention). Sorting by Name SHALL sort by `lastName` first.
+### Requirement: Name column sorts by lastName with a bold visual cue
+The Name column header SHALL be labelled "Name" and cells SHALL keep displaying the owner's name as `firstName lastName` (unchanged). Sorting by Name SHALL sort by `lastName` first. While the name sort is active, the lastName portion of each cell SHALL be rendered bold to signal the sort key; when inactive, the cell renders plain.
 
-#### Scenario: Name cell displays lastName comma firstName
-- **WHEN** the owners list is displayed
-- **THEN** each row in the Name column shows the format "Doe, John" (lastName, firstName)
+#### Scenario: Name cell display is unchanged when not sorted
+- **WHEN** the owners list is displayed with no active name sort
+- **THEN** each row in the Name column shows the format "John Doe" (firstName lastName) with no emphasis
+
+#### Scenario: lastName is bold while name sort is active
+- **WHEN** the user sorts by the Name column
+- **THEN** each Name cell renders the lastName portion in bold (e.g. "John **Doe**") while firstName stays plain
 
 #### Scenario: Clicking Name header sorts by lastName
 - **WHEN** the user clicks the Name column header

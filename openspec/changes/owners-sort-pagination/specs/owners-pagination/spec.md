@@ -20,6 +20,14 @@ The envelope SHALL contain: `content` (array of `OwnerDto`), `totalElements` (in
 - **WHEN** `GET /api/owners?page=999&size=10` is called and there are fewer than 9990 owners
 - **THEN** the response contains an empty `content` array and correct `totalElements`
 
+#### Scenario: Negative page is rejected
+- **WHEN** `GET /api/owners?page=-1` is called
+- **THEN** the backend responds `400 Bad Request` with an RFC-7807 ProblemDetail body
+
+#### Scenario: Out-of-range size is rejected
+- **WHEN** `GET /api/owners?size=0` or `GET /api/owners?size=101` is called
+- **THEN** the backend responds `400 Bad Request` with an RFC-7807 ProblemDetail body (`size` must be 1–100)
+
 ### Requirement: Paginator UI with page size selector
 The owners list screen SHALL display a `<mat-paginator>` below the table.
 The paginator SHALL offer page sizes 5, 10, and 20. The default page size SHALL be 10.
@@ -30,37 +38,45 @@ The paginator SHALL offer page sizes 5, 10, and 20. The default page size SHALL 
 
 #### Scenario: User changes page size
 - **WHEN** the user selects page size 5 in the paginator
-- **THEN** the table reloads with at most 5 rows and the page resets to 1
+- **THEN** the table reloads with at most 5 rows and the page resets to page 0 (first page)
 
 #### Scenario: User navigates to next page
 - **WHEN** the user clicks the next-page button in the paginator
 - **THEN** the table displays the next page of owners
 
 ### Requirement: Pagination state in URL
-The current `page` and `size` values SHALL be reflected in the URL query string at all times.
+Non-default `page` and `size` values SHALL be reflected in the URL query string. Params equal to their defaults (`page=0`, `size=10`) SHALL be omitted, so the default view stays at a bare `/owners` URL. The `page` param is 0-indexed (`page=2` is the third page), matching `MatPaginator.pageIndex` and the `Page.number` response field.
 
 #### Scenario: URL reflects page navigation
-- **WHEN** the user navigates to page 3 with size 10
-- **THEN** the URL contains `?page=3&size=10` (or equivalent representation)
+- **WHEN** the user navigates to the third page with size 5
+- **THEN** the URL contains `?page=2&size=5`
+
+#### Scenario: Default values are omitted from the URL
+- **WHEN** the user is on the first page (page 0) with the default size 10
+- **THEN** the URL contains neither `page` nor `size` params
 
 #### Scenario: Deep-link restores correct page
 - **WHEN** the user opens the owners list URL with `?page=2&size=5`
-- **THEN** the table loads page 2 with 5 rows per page without additional navigation
+- **THEN** the table loads the third page (0-indexed page 2) with 5 rows per page without additional navigation
 
 #### Scenario: Back button restores previous page
-- **WHEN** the user is on page 3, navigates to an owner detail page, then presses the browser back button
-- **THEN** the owners list returns to page 3
+- **WHEN** the user is on the third page, navigates to an owner detail page, then presses the browser back button
+- **THEN** the owners list returns to the third page
 
-### Requirement: Snap to page 1 on filter or size change
-Whenever the search term or page size changes, the current page SHALL reset to 0 (first page).
+### Requirement: Snap to first page on filter, sort, or size change
+Whenever the search term, sort column/direction, or page size changes, the current page SHALL reset to page 0 (first page).
 
 #### Scenario: Filter change resets page
-- **WHEN** the user is on page 3 and modifies the search input
-- **THEN** the page resets to 1 and the table shows the first page of filtered results
+- **WHEN** the user is on the third page and modifies the search input
+- **THEN** the page resets to page 0 and the table shows the first page of filtered results
+
+#### Scenario: Sort change resets page
+- **WHEN** the user is on the third page and clicks a sortable column header
+- **THEN** the page resets to page 0 and the table shows the first page of the new sort order
 
 #### Scenario: Size change resets page
-- **WHEN** the user is on page 3 and changes the page size
-- **THEN** the page resets to 1
+- **WHEN** the user is on the third page and changes the page size
+- **THEN** the page resets to page 0
 
 ### Requirement: Loading overlay during fetch
 While a paginated request is in-flight, the owners list SHALL show the previous rows dimmed with a spinner overlay.

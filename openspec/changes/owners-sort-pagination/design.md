@@ -31,13 +31,13 @@ We adopt Spring-compatible shape `{ content, totalElements, totalPages, number, 
 
 ### 2. Sort chain expansion on the server
 
-The client sends a single column key + direction (e.g. `?sort=firstName,asc`). The backend expands it to a stable multi-field chain:
-- `firstName` → `ORDER BY firstName, lastName, id ASC`
-- `city` → `ORDER BY city, firstName, lastName, id ASC`
-- `address` → `ORDER BY address, firstName, lastName, id ASC`
+The client sends a single column key + direction (e.g. `?sort=lastName,asc`). The backend expands it to a stable multi-field chain:
+- `lastName` → `ORDER BY lastName, firstName, id ASC`
+- `city` → `ORDER BY city, lastName, firstName, id ASC`
+- `address` → `ORDER BY address, lastName, firstName, id ASC`
 - `id ASC` is always the final tiebreaker to guarantee stable pagination with duplicate name/city rows.
 - Unknown column or direction → `400 Bad Request` (`BadRequestException` via the global ProblemDetail filter).
-- The direction (`asc`/`desc`) applies only to the primary column; tiebreakers always stay `ASC`.
+- The direction (`asc`/`desc`) applies to the **whole chain except `id`** — `desc` is the exact mirror of `asc` (e.g. `?sort=city,desc` → `ORDER BY city DESC, lastName DESC, firstName DESC, id ASC`). The `id` tiebreaker always stays `ASC`.
 
 **Alternative considered:** let the client send a full sort array. Rejected — it complicates the URL contract, exposes internals, and the tiebreaker would have to be enforced anyway.
 
@@ -51,7 +51,7 @@ Params equal to their default value are **omitted** from the URL to keep it clea
 
 `ActivatedRoute.queryParams` is the **single source of truth** for all state after init. User input streams (search debounce, sort events, paginator events) only call `router.navigate`; the actual service call is triggered solely by the `queryParams` subscription. The subscription is set up in `ngAfterViewInit` so that `@ViewChild` refs (`MatSort`, `MatPaginator`) are available to sync state back on back-button navigation. Syncing `searchControl` from URL params uses `setValue(..., { emitEvent: false })` to avoid re-triggering navigation.
 
-Sort direction is always explicit in the URL (e.g. `?sort=city,asc`, never `?sort=city`). `MatSort` `matSortDisableClear` is **not** set, so clicking an active header a third time deactivates sort and drops the `sort` param from the URL.
+Sort direction is always explicit in the URL (e.g. `?sort=city,asc`, never `?sort=city`). `matSortDisableClear` **is** set on the table, so once a column is sorted, repeated clicks only toggle asc↔desc — sort never clears (the cleared state is just the default id-order, which users have no real need to return to).
 
 **Alternative considered:** component-local state only. Rejected — requirement explicitly requires URL persistence.
 
@@ -71,7 +71,7 @@ The `findByVisibleText` query already uses a `createQueryBuilder`. We extend it 
 
 ### 7. Name column display and sort
 
-The name cell continues to render as `firstName lastName` (unchanged from current). The column header stays "Name". Sorting by "Name" sorts by `firstName ASC, lastName ASC, id ASC`. The phonebook convention (`lastName, firstName`) was considered and rejected — the sort arrow already signals sort order; changing the display format adds scope without a compelling UX gain and would require updating existing E2E tests.
+The name cell continues to render as `firstName lastName` (unchanged from current) and the column header stays "Name". Sorting by "Name" sorts by `lastName, firstName, id` — the conventional surname-alphabetical order for people lists. To make the sort key visible without changing the display format, the **lastName portion of each name cell is rendered bold while the name sort is active** (e.g. "Betty **Davis**"); when the name sort is inactive the cell renders plain. Changing the display to the phonebook format (`lastName, firstName`) was considered and rejected — it adds scope, changes a familiar screen, and would break existing E2E tests that match on the combined name cell.
 
 ### 8. `<mat-paginator>` + `matSort` alongside Bootstrap table
 

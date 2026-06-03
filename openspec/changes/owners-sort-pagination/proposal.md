@@ -8,7 +8,7 @@ The owners list currently loads all records at once, which becomes unusable at p
 - New query params on `GET /api/owners`: `?page=`, `?size=`, `?sort=col,dir`
 - Server-side sort-chain expansion: a single client column maps to a stable multi-field sort ending in `id ASC` as tiebreaker
 - Sortable columns: Name, Address, City (Pets column is not sortable)
-- Name column header renamed and rendered as **"Lastname, Firstname"** (phonebook convention)
+- Name column display is unchanged (`firstName lastName`); sorting by Name sorts `lastName, firstName, id`, and the lastName portion of each cell is rendered **bold** while the name sort is active to signal the sort key
 - Angular owners list replaces client-side rendering with server-driven pagination (`<mat-paginator>`) and column sort (`matSort`)
 - Page sizes: 5 / 10 / 20, default 10
 - Sort, page, and size state lives in the URL query string (bookmarkable, back-button safe)
