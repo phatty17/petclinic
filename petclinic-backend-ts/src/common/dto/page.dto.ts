@@ -9,7 +9,11 @@ import { ApiProperty } from '@nestjs/swagger';
  * on their `@ApiOkResponse`.
  */
 export class PageDto<T> {
-  @ApiProperty({ isArray: true, description: 'The items of the current page.' })
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'object' },
+    description: 'The items of the current page.',
+  })
   content!: T[];
 
   @ApiProperty({ example: 42, description: 'Total number of items across all pages.' })

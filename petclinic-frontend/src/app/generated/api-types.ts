@@ -153,7 +153,7 @@ export interface components {
     };
     PageDto: {
       /** @description The items of the current page. */
-      content: unknown[][];
+      content: Record<string, never>[];
       /**
        * @description Current page index (0-based).
        * @example 0

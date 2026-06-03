@@ -75,7 +75,7 @@ components:
         content:
           description: The items of the current page.
           items:
-            type: array
+            type: object
           type: array
         number:
           description: Current page index (0-based).
